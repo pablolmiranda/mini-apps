@@ -11,6 +11,8 @@ Tailwind utility classes and `lucide-react` icons.
 | App | Folder | Description |
 | --- | --- | --- |
 | Markdown Scratchpad | [`markdown-scratchpad/`](./markdown-scratchpad) | Fast notes editor, 100% offline via IndexedDB, autosave. Hero: offline/caching. |
+| Focus Timer | [`focus-timer/`](./focus-timer) | Installable Pomodoro timer with notifications and screen Wake Lock. Hero: install + standalone. |
+| QR / Barcode Scanner | [`qr-scanner/`](./qr-scanner) | Camera scanner using the BarcodeDetector API, with a saved scan history. Hero: device API (camera). |
 
 ## The Store contract
 

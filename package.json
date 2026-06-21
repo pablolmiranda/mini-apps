@@ -5,7 +5,8 @@
   "description": "Monorepo of small, self-contained mini-apps. Each builds to a single Store-compatible .tsx file.",
   "workspaces": [
     "markdown-scratchpad",
-    "focus-timer"
+    "focus-timer",
+    "qr-scanner"
   ],
   "scripts": {
     "check-contract": "node scripts/check-contract.mjs"
