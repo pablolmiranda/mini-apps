@@ -1,0 +1,16 @@
+{
+  "name": "mini-apps",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo of small, self-contained mini-apps. Each builds to a single Store-compatible .tsx file.",
+  "workspaces": [
+    "markdown-scratchpad",
+    "focus-timer"
+  ],
+  "scripts": {
+    "check-contract": "node scripts/check-contract.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
