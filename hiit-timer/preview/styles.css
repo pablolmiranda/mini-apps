@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* The deliverable lives outside this preview root, so point Tailwind's
+   content scanner at it explicitly (auto-detection misses ../src). */
+@source "../src/**/*.tsx";
+@source "./**/*.{tsx,html}";
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
