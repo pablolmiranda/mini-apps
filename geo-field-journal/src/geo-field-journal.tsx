@@ -15,6 +15,7 @@ import {
   LocateOff,
   Loader2,
   ImageOff,
+  ImagePlus,
   Check,
   AlertTriangle,
   Navigation,
@@ -871,7 +872,8 @@ function Composer({
   const [manLng, setManLng] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const libraryRef = useRef<HTMLInputElement>(null);
   const geoSupported = useMemo(hasGeolocation, []);
 
   /* Try to grab a GPS fix as soon as the composer opens (if supported). */
@@ -988,15 +990,25 @@ function Composer({
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
-          {/* Photo capture */}
+          {/* Photo: take with camera, or pick from the photo library */}
           <div>
+            {/* Camera capture (prompts the camera on mobile) */}
             <input
-              ref={fileRef}
+              ref={cameraRef}
               type="file"
               accept="image/*"
               capture="environment"
               className="hidden"
-              aria-label="Capture photo"
+              aria-label="Take photo with camera"
+              onChange={(e) => onPhotoPick(e.target.files?.[0])}
+            />
+            {/* Photo library / file picker (no capture = lets the OS show the gallery) */}
+            <input
+              ref={libraryRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              aria-label="Choose photo from library"
               onChange={(e) => onPhotoPick(e.target.files?.[0])}
             />
             {photo ? (
@@ -1006,28 +1018,50 @@ function Composer({
                   alt="Captured"
                   className="aspect-[4/3] w-full rounded-2xl border border-[var(--line)] object-cover"
                 />
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  className="btn absolute bottom-2 right-2 flex items-center gap-1.5 rounded-lg bg-[var(--bg)]/85 px-3 py-1.5 text-[12px] font-medium backdrop-blur"
-                >
-                  <Camera className="h-3.5 w-3.5" /> Retake
-                </button>
+                <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                  <button
+                    onClick={() => cameraRef.current?.click()}
+                    aria-label="Retake photo"
+                    className="btn flex items-center gap-1.5 rounded-lg bg-[var(--bg)]/85 px-3 py-1.5 text-[12px] font-medium backdrop-blur"
+                  >
+                    <Camera className="h-3.5 w-3.5" /> Retake
+                  </button>
+                  <button
+                    onClick={() => libraryRef.current?.click()}
+                    aria-label="Replace from library"
+                    className="btn flex items-center gap-1.5 rounded-lg bg-[var(--bg)]/85 px-3 py-1.5 text-[12px] font-medium backdrop-blur"
+                  >
+                    <ImagePlus className="h-3.5 w-3.5" /> Library
+                  </button>
+                </div>
               </div>
             ) : (
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="btn flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-[var(--line)] bg-[var(--bg-2)] text-[var(--muted)] hover:border-[var(--accent)]/40"
-              >
+              <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[var(--line)] bg-[var(--bg-2)] text-[var(--muted)]">
                 {photoBusy ? (
                   <Loader2 className="h-7 w-7 animate-spin text-[var(--accent)]" />
                 ) : (
                   <>
                     <Camera className="h-8 w-8 text-[var(--accent)]" />
-                    <span className="text-sm font-medium">Capture photo</span>
-                    <span className="text-[11px] text-[var(--faint)]">camera or library</span>
+                    <span className="text-sm font-medium">Add a photo</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => cameraRef.current?.click()}
+                        aria-label="Take photo"
+                        className="btn flex items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--bg)] px-3.5 py-2 text-[13px] font-medium hover:border-[var(--accent)]/40"
+                      >
+                        <Camera className="h-4 w-4 text-[var(--accent)]" /> Take photo
+                      </button>
+                      <button
+                        onClick={() => libraryRef.current?.click()}
+                        aria-label="Choose from library"
+                        className="btn flex items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--bg)] px-3.5 py-2 text-[13px] font-medium hover:border-[var(--accent)]/40"
+                      >
+                        <ImagePlus className="h-4 w-4 text-[var(--accent)]" /> Library
+                      </button>
+                    </div>
                   </>
                 )}
-              </button>
+              </div>
             )}
           </div>
 
