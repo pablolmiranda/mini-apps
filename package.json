@@ -18,7 +18,10 @@
     "hiit-timer"
   ],
   "scripts": {
-    "check-contract": "node scripts/check-contract.mjs"
+    "check-contract": "node scripts/check-contract.mjs",
+    "build": "npm run build --workspaces --if-present",
+    "verify": "npm run verify --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
   },
   "engines": {
     "node": ">=18"
