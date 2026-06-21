@@ -6,7 +6,15 @@
   "workspaces": [
     "markdown-scratchpad",
     "focus-timer",
-    "qr-scanner"
+    "qr-scanner",
+    "pocket-cookbook",
+    "geo-field-journal",
+    "pocket-level-compass",
+    "offline-expense-tracker",
+    "read-it-later",
+    "interval-workout-coach",
+    "soundboard-sampler",
+    "weather-at-a-glance"
   ],
   "scripts": {
     "check-contract": "node scripts/check-contract.mjs"
