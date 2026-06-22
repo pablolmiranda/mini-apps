@@ -1078,9 +1078,10 @@ function SignatureSubdivision({ settings, patch }: { settings: Settings; patch: 
   );
 }
 
-function DurationField({ label, value, onChange, optional }: { label: string; value: Dur | null; onChange: (d: Dur | null) => void; optional?: boolean }) {
+function DurationField({ label, value, onChange, optional, timeStep = 15 }: { label: string; value: Dur | null; onChange: (d: Dur | null) => void; optional?: boolean; timeStep?: number }) {
   const enabled = value != null;
   const v = value ?? { unit: "time" as Unit, value: 60 };
+  const step = v.unit === "time" ? timeStep : 1;
   return (
     <div className="mt-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5">
       <div className="flex items-center">
@@ -1100,9 +1101,9 @@ function DurationField({ label, value, onChange, optional }: { label: string; va
                 style={{ background: v.unit === u ? "var(--accent)" : "transparent", color: v.unit === u ? "var(--bg)" : "var(--muted)" }}>{u === "time" ? "Time" : "Bars"}</button>
             ))}
           </div>
-          <button onClick={() => onChange({ unit: v.unit, value: Math.max(1, v.value - (v.unit === "time" ? 15 : 1)) })} aria-label="Less" className="btn flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface-2)]"><Minus className="h-4 w-4" /></button>
+          <button onClick={() => onChange({ unit: v.unit, value: Math.max(1, v.value - step) })} aria-label={`Decrease ${label}`} className="btn flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface-2)]"><Minus className="h-4 w-4" /></button>
           <span className="num min-w-16 text-center text-base font-bold">{v.unit === "time" ? formatHMS(v.value) : `${v.value} bars`}</span>
-          <button onClick={() => onChange({ unit: v.unit, value: v.value + (v.unit === "time" ? 15 : 1) })} aria-label="More" className="btn flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface-2)]"><Plus className="h-4 w-4" /></button>
+          <button onClick={() => onChange({ unit: v.unit, value: v.value + step })} aria-label={`Increase ${label}`} className="btn flex h-9 w-9 items-center justify-center rounded-full bg-[var(--surface-2)]"><Plus className="h-4 w-4" /></button>
         </div>
       )}
     </div>
@@ -1253,7 +1254,7 @@ function WorkoutEditor({ workout, onCancel, onSave }: { workout: Workout | null;
 
           <button onClick={() => setExercises((p) => [...p, newExercise(p.length + 1)])} aria-label="Add exercise" className="btn flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-[var(--border)] py-2.5 text-sm font-medium text-[var(--muted)]"><Plus className="h-4 w-4" /> Add exercise</button>
 
-          <DurationField label="Rest between exercises" value={rest} onChange={(d) => setRest(d ?? { unit: "time", value: 0 })} />
+          <DurationField label="Rest between exercises" value={rest} onChange={(d) => setRest(d ?? { unit: "time", value: 0 })} timeStep={1} />
         </div>
       </div>
     </div>

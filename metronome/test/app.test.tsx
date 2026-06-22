@@ -124,6 +124,19 @@ describe("workouts", () => {
     await waitFor(() => expect(screen.queryByLabelText("Run Warm-up Ladder")).toBeNull());
     expect(screen.getByLabelText("Run My Routine")).toBeTruthy();
   });
+
+  it("adjusts the rest time in 1-second steps", async () => {
+    render(<App />);
+    await gotoWorkout();
+    fireEvent.click(await screen.findByLabelText("New workout"));
+
+    expect(screen.getByText("0:15")).toBeTruthy(); // default rest
+    fireEvent.click(screen.getByLabelText("Increase Rest between exercises"));
+    expect(screen.getByText("0:16")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText("Decrease Rest between exercises"));
+    fireEvent.click(screen.getByLabelText("Decrease Rest between exercises"));
+    expect(screen.getByText("0:14")).toBeTruthy();
+  });
 });
 
 /* ---------------- Practice tracking ---------------- */
