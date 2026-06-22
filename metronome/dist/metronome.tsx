@@ -22,6 +22,7 @@ import {
   Pencil,
   ArrowLeft,
   Gauge,
+  SkipForward,
 } from "lucide-react";
 
 /* ================================================================== *
@@ -537,6 +538,28 @@ function useEngine() {
     [scheduler, draw, updateProgress]
   );
 
+  // Jump to the next exercise segment (skipping a following rest). Stops if
+  // there is no further exercise.
+  const skip = useCallback(() => {
+    const ac = acRef.current;
+    if (!ac || !playingRef.current) return;
+    let next = segIdxRef.current + 1;
+    while (next < segsRef.current.length && segsRef.current[next].kind === "rest") next++;
+    if (next >= segsRef.current.length) {
+      stop();
+      return;
+    }
+    segIdxRef.current = next;
+    applySeg(segsRef.current[next]);
+    const t = ac.currentTime;
+    segStartRef.current = t;
+    nextNoteRef.current = t + 0.05;
+    subIdxRef.current = 0;
+    beatInBarRef.current = 0;
+    barsDoneRef.current = 0;
+    setUi((u) => ({ ...u, segIdx: next, beatInBar: -1 }));
+  }, [applySeg, stop]);
+
   // Live edits for the basic metronome (open-ended single segment).
   const updateLive = useCallback((patch: Partial<SegParams>) => {
     paramsRef.current = { ...paramsRef.current, ...patch };
@@ -555,7 +578,7 @@ function useEngine() {
 
   useEffect(() => () => stop(), [stop]);
 
-  return { ui, start, stop, updateLive, pendRef, supported };
+  return { ui, start, stop, skip, updateLive, pendRef, supported };
 }
 
 /* ================================================================== *
@@ -862,6 +885,16 @@ export default function App() {
           >
             {running ? <Square className="h-6 w-6" fill="currentColor" /> : <Play className="h-7 w-7 translate-x-0.5" fill="currentColor" />}
           </button>
+          {mode === "workout" && woView.name === "run" && running && (
+            <button
+              onClick={engine.skip}
+              aria-label="Skip to next exercise"
+              title="Skip to next exercise"
+              className="btn absolute right-6 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+            >
+              <SkipForward className="h-5 w-5" />
+            </button>
+          )}
         </footer>
       )}
 

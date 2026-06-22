@@ -141,6 +141,54 @@ class StubAudioContext {
   }
 }
 
+function seedWorkout(w: unknown): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open("metronome", 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore("workouts", { keyPath: "id" }).createIndex("updatedAt", "updatedAt");
+    };
+    req.onsuccess = () => {
+      const db = req.result;
+      const t = db.transaction("workouts", "readwrite");
+      t.objectStore("workouts").put(w);
+      t.oncomplete = () => { db.close(); resolve(); };
+      t.onerror = () => reject(t.error);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+describe("workout runner skip", () => {
+  beforeEach(() => {
+    vi.stubGlobal("AudioContext", StubAudioContext);
+    vi.stubGlobal("requestAnimationFrame", () => 1);
+    vi.stubGlobal("cancelAnimationFrame", () => {});
+  });
+
+  it("skips from the current exercise to the next (past the rest)", async () => {
+    await seedWorkout({
+      id: "wo", name: "Test WO", rest: { unit: "time", value: 10 }, createdAt: 1, updatedAt: 1,
+      exercises: [
+        { id: "a", name: "First", bpm: 90, beats: 4, denom: 4, subdivision: 1, accentFirst: true, duration: { unit: "time", value: 30 } },
+        { id: "b", name: "Second", bpm: 110, beats: 4, denom: 4, subdivision: 1, accentFirst: true, duration: { unit: "time", value: 30 } },
+      ],
+    });
+    render(<App />);
+    fireEvent.click(screen.getByLabelText("Choose mode"));
+    fireEvent.click(screen.getByLabelText("Workout mode"));
+    fireEvent.click(await screen.findByLabelText("Run Test WO"));
+    fireEvent.click(screen.getByLabelText("Start"));
+
+    expect(screen.getByText("First")).toBeTruthy();
+    expect(screen.getByText(/Exercise 1 of 2/)).toBeTruthy();
+
+    fireEvent.click(screen.getByLabelText("Skip to next exercise"));
+
+    expect(screen.getByText("Second")).toBeTruthy();
+    expect(screen.getByText(/Exercise 2 of 2/)).toBeTruthy();
+  });
+});
+
 describe("practice tracking", () => {
   beforeEach(() => {
     vi.stubGlobal("AudioContext", StubAudioContext);
