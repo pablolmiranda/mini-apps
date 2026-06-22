@@ -624,7 +624,7 @@ export default function App() {
       <div className="sb-grain" />
 
       {/* Console header */}
-      <header className="relative z-10 flex items-center gap-3 px-4 pt-4 sm:px-6">
+      <header className="relative z-10 flex shrink-0 items-center gap-3 px-4 pt-4 sm:px-6">
         <div className="flex items-center gap-2">
           <div
             className="flex h-9 w-9 items-center justify-center rounded-xl"
@@ -660,7 +660,7 @@ export default function App() {
 
       {/* Kit selector */}
       <nav
-        className="relative z-10 mt-4 flex gap-2 overflow-x-auto px-4 sm:px-6"
+        className="relative z-10 mt-4 flex shrink-0 gap-2 overflow-x-auto px-4 sm:px-6"
         aria-label="Kit selector"
       >
         {KITS.map((k, i) => {
@@ -689,10 +689,11 @@ export default function App() {
         })}
       </nav>
 
-      {/* Pad grid */}
-      <main className="relative z-10 flex flex-1 items-center px-4 py-4 sm:px-6">
+      {/* Pad grid — fills the space left between the kit row and the volume
+          bar; pads shrink to fit so the volume bar is always on screen. */}
+      <main className="relative z-10 flex min-h-0 flex-1 px-4 py-4 sm:px-6">
         <div
-          className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4"
+          className="grid h-full w-full grid-cols-2 auto-rows-fr gap-3 sm:grid-cols-4"
           role="group"
           aria-label={`${kit.name} pads`}
         >
@@ -701,7 +702,7 @@ export default function App() {
             return (
               <button
                 key={pad.id}
-                className={`pad flex aspect-square flex-col items-start justify-between p-3 text-left sm:p-4${
+                className={`pad flex min-h-0 flex-col items-start justify-between overflow-hidden p-3 text-left sm:p-4${
                   isHit ? " hit" : ""
                 }`}
                 style={{ "--h": String(pad.hue) } as CSSProperties}
@@ -742,7 +743,7 @@ export default function App() {
       </main>
 
       {/* Master volume bar */}
-      <footer className="relative z-10 flex items-center gap-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 sm:px-6">
+      <footer className="relative z-10 flex shrink-0 items-center gap-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 sm:px-6">
         <button
           onClick={() => setMuted((m) => !m)}
           aria-label={muted ? "Unmute" : "Mute"}
