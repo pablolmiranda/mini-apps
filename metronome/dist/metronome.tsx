@@ -1237,6 +1237,12 @@ function WorkoutEditor({ workout, onCancel, onSave }: { workout: Workout | null;
 
   const upd = (id: string, patch: Partial<Exercise>) => setExercises((p) => p.map((e) => (e.id === id ? { ...e, ...patch } : e)));
   const move = (i: number, d: -1 | 1) => setExercises((p) => { const n = [...p]; const j = i + d; if (j < 0 || j >= n.length) return p; [n[i], n[j]] = [n[j], n[i]]; return n; });
+  const dup = (i: number) => setExercises((p) => {
+    const copy: Exercise = { ...p[i], id: genId(), name: nextDuplicateName(p[i].name) };
+    const n = [...p];
+    n.splice(i + 1, 0, copy);
+    return n;
+  });
 
   const save = () => {
     const now = Date.now();
@@ -1272,6 +1278,7 @@ function WorkoutEditor({ workout, onCancel, onSave }: { workout: Workout | null;
                   <button onClick={() => move(i, 1)} disabled={i === exercises.length - 1} aria-label={`Move ${ex.name} down`} className="btn flex h-5 w-6 items-center justify-center text-[var(--faint)]"><ChevronDown className="h-4 w-4" /></button>
                 </div>
                 <input value={ex.name} onChange={(e) => upd(ex.id, { name: e.target.value })} aria-label="Exercise name" className="min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none" />
+                <button onClick={() => dup(i)} aria-label={`Duplicate ${ex.name}`} className="btn flex h-8 w-8 items-center justify-center rounded-lg text-[var(--faint)] hover:text-[var(--accent)]"><Copy className="h-4 w-4" /></button>
                 <button onClick={() => setExercises((p) => (p.length > 1 ? p.filter((e) => e.id !== ex.id) : p))} disabled={exercises.length <= 1} aria-label={`Remove ${ex.name}`} className="btn flex h-8 w-8 items-center justify-center rounded-lg text-[var(--faint)] hover:text-rose-400"><Trash2 className="h-4 w-4" /></button>
               </div>
               <div className="mt-2.5 grid grid-cols-2 gap-2">

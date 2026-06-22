@@ -149,6 +149,18 @@ describe("workouts", () => {
     await waitFor(() => expect(screen.getByLabelText("Run Warm-up Ladder (2)")).toBeTruthy());
   });
 
+  it("duplicates an exercise inside the editor (inserted after, with (N))", async () => {
+    render(<App />);
+    await gotoWorkout();
+    fireEvent.click(await screen.findByLabelText("New workout"));
+
+    expect((screen.getAllByLabelText("Exercise name") as HTMLInputElement[]).length).toBe(1);
+    fireEvent.click(screen.getByLabelText("Duplicate Exercise 1"));
+
+    const names = (screen.getAllByLabelText("Exercise name") as HTMLInputElement[]).map((i) => i.value);
+    expect(names).toEqual(["Exercise 1", "Exercise 1 (1)"]);
+  });
+
   it("adjusts the rest time in 1-second steps", async () => {
     render(<App />);
     await gotoWorkout();
