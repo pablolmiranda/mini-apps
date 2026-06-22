@@ -15,7 +15,8 @@
     "interval-workout-coach",
     "soundboard-sampler",
     "weather-at-a-glance",
-    "hiit-timer"
+    "hiit-timer",
+    "metronome"
   ],
   "scripts": {
     "check-contract": "node scripts/check-contract.mjs",
