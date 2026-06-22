@@ -9,6 +9,7 @@ import App, {
   formatHMS,
   buildTrainerSegments,
   buildWorkoutSegments,
+  nextDuplicateName,
 } from "../src/metronome";
 
 beforeEach(() => {
@@ -71,6 +72,13 @@ describe("helpers", () => {
     expect(segs[1].params.silent).toBe(true);
     expect(segs[2].end).toEqual({ unit: "bars", value: 8 });
   });
+
+  it("adds or increments a (N) suffix when duplicating", () => {
+    expect(nextDuplicateName("Warm-up")).toBe("Warm-up (1)");
+    expect(nextDuplicateName("Warm-up (1)")).toBe("Warm-up (2)");
+    expect(nextDuplicateName("Routine (9)")).toBe("Routine (10)");
+    expect(nextDuplicateName("Set  (3)")).toBe("Set (4)");
+  });
 });
 
 /* ---------------- Metronome UI ---------------- */
@@ -118,11 +126,27 @@ describe("workouts", () => {
     render(<App />);
     await waitFor(() => expect(screen.getByLabelText("Run My Routine")).toBeTruthy());
 
-    // Delete the sample
+    // Delete the sample (delete now lives in the row's overflow menu)
+    fireEvent.click(screen.getByLabelText("Options for Warm-up Ladder"));
     fireEvent.click(screen.getByLabelText("Delete Warm-up Ladder"));
     fireEvent.click(screen.getByLabelText("Confirm delete Warm-up Ladder"));
     await waitFor(() => expect(screen.queryByLabelText("Run Warm-up Ladder")).toBeNull());
     expect(screen.getByLabelText("Run My Routine")).toBeTruthy();
+  });
+
+  it("duplicates a workout, appending/incrementing (N)", async () => {
+    render(<App />);
+    await gotoWorkout();
+    await screen.findByLabelText("Run Warm-up Ladder");
+
+    fireEvent.click(screen.getByLabelText("Options for Warm-up Ladder"));
+    fireEvent.click(screen.getByLabelText("Duplicate Warm-up Ladder"));
+    await waitFor(() => expect(screen.getByLabelText("Run Warm-up Ladder (1)")).toBeTruthy());
+
+    // Duplicating the copy increments N.
+    fireEvent.click(screen.getByLabelText("Options for Warm-up Ladder (1)"));
+    fireEvent.click(screen.getByLabelText("Duplicate Warm-up Ladder (1)"));
+    await waitFor(() => expect(screen.getByLabelText("Run Warm-up Ladder (2)")).toBeTruthy());
   });
 
   it("adjusts the rest time in 1-second steps", async () => {

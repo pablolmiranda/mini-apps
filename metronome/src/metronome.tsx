@@ -23,6 +23,8 @@ import {
   ArrowLeft,
   Gauge,
   SkipForward,
+  MoreVertical,
+  Copy,
 } from "lucide-react";
 
 /* ================================================================== *
@@ -140,6 +142,13 @@ export function formatHMS(totalSeconds: number): string {
   const ss = s % 60;
   if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
   return `${m}:${String(ss).padStart(2, "0")}`;
+}
+
+/** Append/increment a trailing "(N)" suffix when duplicating a workout name. */
+export function nextDuplicateName(name: string): string {
+  const m = name.match(/^(.*?)\s*\((\d+)\)\s*$/);
+  if (m) return `${m[1]} (${parseInt(m[2], 10) + 1})`;
+  return `${name} (1)`;
 }
 
 export function buildTrainerSegments(cfg: TrainerConfig): Segment[] {
@@ -790,6 +799,23 @@ export default function App() {
     await deleteWorkout(id);
     setWorkouts((prev) => prev.filter((x) => x.id !== id));
   }, []);
+  const duplicateWorkout = useCallback(async (id: string) => {
+    setWorkouts((prev) => {
+      const src = prev.find((x) => x.id === id);
+      if (!src) return prev;
+      const now = Date.now();
+      const copy: Workout = {
+        ...src,
+        id: genId(),
+        name: nextDuplicateName(src.name),
+        exercises: src.exercises.map((e) => ({ ...e, id: genId() })),
+        createdAt: now,
+        updatedAt: now,
+      };
+      void putWorkout(copy);
+      return [copy, ...prev].sort((a, b) => b.updatedAt - a.updatedAt);
+    });
+  }, []);
 
   const runningWorkout = woView.name === "run" ? workouts.find((x) => x.id === woView.id) ?? null : null;
   const showTransport = mode === "metronome" || mode === "trainer" || (mode === "workout" && woView.name === "run");
@@ -862,7 +888,7 @@ export default function App() {
           <TrainerView ui={engine.ui} cfg={trainer} setCfg={setTrainer} running={running} pendRef={engine.pendRef} />
         )}
         {mode === "workout" && woView.name === "list" && (
-          <WorkoutList workouts={workouts} onNew={() => setWoView({ name: "edit", id: null })} onEdit={(id) => setWoView({ name: "edit", id })} onRun={(id) => setWoView({ name: "run", id })} onDelete={removeWorkout} />
+          <WorkoutList workouts={workouts} onNew={() => setWoView({ name: "edit", id: null })} onEdit={(id) => setWoView({ name: "edit", id })} onRun={(id) => setWoView({ name: "run", id })} onDelete={removeWorkout} onDuplicate={duplicateWorkout} />
         )}
         {mode === "workout" && woView.name === "edit" && (
           <WorkoutEditor workout={woView.id ? workouts.find((w) => w.id === woView.id) ?? null : null} onCancel={() => setWoView({ name: "list" })} onSave={saveWorkout} />
@@ -1159,8 +1185,9 @@ function NumField({ label, value, min, max, step, suffix, onChange, disabled }: 
  * Workout list / editor / runner
  * ================================================================== */
 
-function WorkoutList({ workouts, onNew, onEdit, onRun, onDelete }: { workouts: Workout[]; onNew: () => void; onEdit: (id: string) => void; onRun: (id: string) => void; onDelete: (id: string) => void }) {
+function WorkoutList({ workouts, onNew, onEdit, onRun, onDelete, onDuplicate }: { workouts: Workout[]; onNew: () => void; onEdit: (id: string) => void; onRun: (id: string) => void; onDelete: (id: string) => void; onDuplicate: (id: string) => void }) {
   const [confirm, setConfirm] = useState<string | null>(null);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
   return (
     <div className="mx-auto w-full max-w-xl px-5 pb-6 pt-3">
       <button onClick={onNew} aria-label="New workout" className="btn mb-3 flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-[var(--border)] py-3 text-sm font-semibold text-[var(--muted)]"><Plus className="h-4 w-4" /> New workout</button>
@@ -1173,7 +1200,18 @@ function WorkoutList({ workouts, onNew, onEdit, onRun, onDelete }: { workouts: W
           <div className="mt-3 flex items-center gap-2">
             <button onClick={() => onRun(w.id)} aria-label={`Run ${w.name}`} className="btn flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--accent)] py-2.5 text-sm font-semibold text-[var(--bg)]"><Play className="h-4 w-4" fill="currentColor" /> Run</button>
             <button onClick={() => onEdit(w.id)} aria-label={`Edit ${w.name}`} className="btn flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-2)] text-[var(--muted)]"><Pencil className="h-[18px] w-[18px]" /></button>
-            <button onClick={() => setConfirm(w.id)} aria-label={`Delete ${w.name}`} className="btn flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-2)] text-[var(--muted)] hover:text-rose-400"><Trash2 className="h-[18px] w-[18px]" /></button>
+            <div className="relative">
+              <button onClick={() => setMenuFor((m) => (m === w.id ? null : w.id))} aria-label={`Options for ${w.name}`} aria-expanded={menuFor === w.id} className="btn flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-2)] text-[var(--muted)]"><MoreVertical className="h-[18px] w-[18px]" /></button>
+              {menuFor === w.id && (
+                <>
+                  <button className="fixed inset-0 z-10 cursor-default" aria-label="Close menu" onClick={() => setMenuFor(null)} />
+                  <div className="menu absolute right-0 top-full z-20 mt-1.5 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl">
+                    <button onClick={() => { onDuplicate(w.id); setMenuFor(null); }} aria-label={`Duplicate ${w.name}`} className="btn flex w-full items-center gap-2.5 px-3.5 py-3 text-left text-sm hover:bg-[var(--surface-2)]"><Copy className="h-[18px] w-[18px] text-[var(--muted)]" /> Duplicate</button>
+                    <button onClick={() => { setConfirm(w.id); setMenuFor(null); }} aria-label={`Delete ${w.name}`} className="btn flex w-full items-center gap-2.5 px-3.5 py-3 text-left text-sm text-rose-400 hover:bg-[var(--surface-2)]"><Trash2 className="h-[18px] w-[18px]" /> Delete</button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           {confirm === w.id && (
             <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-[var(--surface-2)] p-2.5 text-[13px]">
