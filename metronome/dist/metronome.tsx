@@ -87,6 +87,8 @@ const SUBDIVISIONS = [
   { v: 2, label: "2", name: "Eighth" },
   { v: 3, label: "3", name: "Triplet" },
   { v: 4, label: "4", name: "Sixteenth" },
+  { v: 6, label: "6", name: "Sextuplet" },
+  { v: 8, label: "8", name: "32nd" },
 ];
 const DENOMS = [2, 4, 8];
 
@@ -1089,7 +1091,7 @@ function SignatureSubdivision({ settings, patch }: { settings: Settings; patch: 
 
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5">
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">Subdivision</div>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
           {SUBDIVISIONS.map((s) => (
             <button key={s.v} onClick={() => patch({ subdivision: s.v })} aria-label={s.name} aria-pressed={settings.subdivision === s.v}
               className="btn flex flex-col items-center gap-0.5 rounded-xl py-2"

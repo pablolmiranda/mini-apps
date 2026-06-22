@@ -99,6 +99,12 @@ describe("metronome view", () => {
 
     fireEvent.click(screen.getByLabelText("Eighth"));
     expect(screen.getByLabelText("Eighth").getAttribute("aria-pressed")).toBe("true");
+
+    // 6 and 8 subdivisions are available.
+    fireEvent.click(screen.getByLabelText("Sextuplet"));
+    expect(screen.getByLabelText("Sextuplet").getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByLabelText("32nd"));
+    expect(screen.getByLabelText("32nd").getAttribute("aria-pressed")).toBe("true");
   });
 });
 
