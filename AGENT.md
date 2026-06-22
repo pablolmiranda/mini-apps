@@ -1,8 +1,8 @@
 # AGENT.md — building mini-apps
 
 Context for AI agents (and humans) working in this repo. Read this before
-creating or modifying a mini-app. The first app, `markdown-scratchpad/`, is the
-**reference implementation** — copy its structure.
+creating or modifying a mini-app. All apps live under `apps/`. The first app,
+`apps/markdown-scratchpad/`, is the **reference implementation** — copy its structure.
 
 ## What this repo is
 
@@ -40,19 +40,20 @@ Assumptions still unconfirmed with the Store owner (flagged, non-blocking):
 
 ```
 mini-apps/
-  package.json            npm workspaces + root script
+  package.json            npm workspaces ("apps/*") + root build/verify/test
   tsconfig.base.json      shared strict TS (jsx: react-jsx)
   scripts/check-contract.mjs   the build gate (allowlist lives here)
   README.md / AGENT.md
-  <app>/                  one folder per mini-app
-    src/<app>.tsx         THE deliverable (single file)
-    preview/              local dev host — NOT part of the deliverable
-      index.html, main.tsx, styles.css
-    test/                 vitest + fake-indexeddb
-    vite.config.ts        dev/preview host (root: preview)
-    vitest.config.ts      separate so tests run from app root
-    tsconfig.json
-    dist/<app>.tsx        build output = upload artifact
+  apps/
+    <app>/                one folder per mini-app
+      src/<app>.tsx       THE deliverable (single file)
+      preview/            local dev host — NOT part of the deliverable
+        index.html, main.tsx, styles.css
+      test/               vitest + fake-indexeddb
+      vite.config.ts      dev/preview host (root: preview)
+      vitest.config.ts    separate so tests run from app root
+      tsconfig.json       extends ../../tsconfig.base.json
+      dist/<app>.tsx      build output = upload artifact
 ```
 
 ## Per-app scripts (in `<app>/package.json`)
@@ -68,9 +69,13 @@ mini-apps/
 
 ## How to add a new mini-app
 
-1. Copy `markdown-scratchpad/` to `mini-apps/<new-app>/`; rename `src/<new-app>.tsx`.
-2. Add `<new-app>` to `workspaces` in the root `package.json`.
-3. In `<new-app>/preview/styles.css` keep the `@source` lines pointing at
+1. Copy `apps/markdown-scratchpad/` to `apps/<new-app>/`; rename `src/<new-app>.tsx`.
+   It is auto-included by the root `workspaces: ["apps/*"]` glob — no manual
+   registration needed.
+2. Fix the two relative paths in the copied app: `tsconfig.json` extends
+   `../../tsconfig.base.json`, and the `check` script runs
+   `../../scripts/check-contract.mjs`.
+3. In `apps/<new-app>/preview/styles.css` keep the `@source` lines pointing at
    `../src/**/*.tsx` (see Gotcha #1).
 4. Author the app as one `src/<new-app>.tsx` (default export; only react +
    lucide-react; Tailwind classes).

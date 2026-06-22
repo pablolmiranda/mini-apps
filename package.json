@@ -4,19 +4,7 @@
   "private": true,
   "description": "Monorepo of small, self-contained mini-apps. Each builds to a single Store-compatible .tsx file.",
   "workspaces": [
-    "markdown-scratchpad",
-    "focus-timer",
-    "qr-scanner",
-    "pocket-cookbook",
-    "geo-field-journal",
-    "pocket-level-compass",
-    "offline-expense-tracker",
-    "read-it-later",
-    "interval-workout-coach",
-    "soundboard-sampler",
-    "weather-at-a-glance",
-    "hiit-timer",
-    "metronome"
+    "apps/*"
   ],
   "scripts": {
     "check-contract": "node scripts/check-contract.mjs",
